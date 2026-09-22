@@ -946,16 +946,37 @@ const VACCINES = [
 ];
 
 /* ===================== BIBLIOTECA SONORA (NUEVO · Premium) =====================
-   Cuentos y canciones narradas. El campo "src" debe apuntar al archivo de audio real
-   (por ejemplo, subiendo una carpeta /audio al repo de GitHub Pages). Hasta que subas
-   los archivos, los botones van a mostrar un aviso si el navegador no encuentra el mp3. */
-const AUDIO_LIB = [
+   Cuentos y canciones narradas. AUDIO_LIB_BASE son los 5 de lanzamiento (siempre
+   disponibles, van adentro del código). AUDIO_LIB_EXTRA se carga sola desde el archivo
+   audio_lib.json (calendario de 3 años, 2026-2029): cada pieza tiene una fecha "desde"
+   y la app la muestra sola apenas llega esa fecha, sin tocar este HTML nunca más.
+   El campo "src" debe apuntar al archivo de audio real en la carpeta /audio del repo;
+   hasta que subas cada mp3, se puede leer el guion igual tocando "📄 Ver guion". */
+const AUDIO_LIB_BASE = [
  {n:"El conejito que no quería dormir",ic:"🐰",type:"Cuento",band:"0 a 2 años",free:true,src:"audio/cuento-conejito.mp3",d:"Un cuento corto y calmo para antes de dormir."},
  {n:"Canción de la manito",ic:"✋",type:"Canción",band:"0 a 2 años",src:"audio/cancion-manito.mp3",d:"Canción tradicional con gestos, ideal para el cambiado."},
  {n:"El pajarito curioso",ic:"🐦",type:"Cuento",band:"2 a 5 años",src:"audio/cuento-pajarito.mp3",d:"Una historia breve que invita a explorar."},
  {n:"Canción para contar hasta 5",ic:"🔢",type:"Canción",band:"2 a 5 años",src:"audio/cancion-contar.mp3",d:"Rima simple para aprender a contar jugando."},
  {n:"La lluvia y el paraguas",ic:"☔",type:"Cuento",band:"2 a 5 años",src:"audio/cuento-lluvia.mp3",d:"Cuento sobre las emociones en un día de lluvia."}
 ];
+let AUDIO_LIB_EXTRA = [];
+async function loadAudioLib(){
+  try{
+    const r=await fetch("audio_lib.json",{cache:"no-store"});
+    const j=await r.json();
+    if(Array.isArray(j)) AUDIO_LIB_EXTRA=j;
+    if(!$("app").classList.contains("hidden") && S.section==="library" && S.libTab==="audio") render(true);
+  }catch(e){ /* si audio_lib.json no está o falla, seguimos mostrando solo los 5 de lanzamiento */ }
+}
+function audioLibAll(){ // NUEVO: solo muestra lo ya publicado según la fecha "desde" de cada pieza
+  const today=todayKey();
+  return AUDIO_LIB_BASE.concat(AUDIO_LIB_EXTRA.filter(t=>!t.desde||t.desde<=today));
+}
+function nextAudioPiece(){ // próxima pieza programada que todavía no se publicó (sin revelarla)
+  const today=todayKey();
+  const upcoming=AUDIO_LIB_EXTRA.filter(t=>t.desde&&t.desde>today).sort((a,b)=>a.desde.localeCompare(b.desde));
+  return upcoming[0]||null;
+}
 
 /* ===================== SONIDOS ===================== */
 const SOUNDS = [
@@ -1771,21 +1792,51 @@ function viewLibrary(){
 /* Biblioteca sonora: cuentos y canciones narradas (NUEVO · Premium) */
 const TRK={audio:null,idx:null};
 function playTrack(i){
-  const t=AUDIO_LIB[i];
+  const list=audioLibAll(), t=list[i];
   if(!(t.free||isPremium())){ openPremium(); return; }
   if(TRK.idx===i && TRK.audio && !TRK.audio.paused){ TRK.audio.pause(); render(true); return; }
   if(!TRK.audio){ TRK.audio=new Audio(); TRK.audio.onended=()=>{ TRK.idx=null; render(true); }; }
   if(TRK.idx!==i){ TRK.audio.src=t.src; TRK.idx=i; }
   TRK.audio.play().then(()=>render(true)).catch(()=>toast("Todavía no se cargó el archivo de audio en el sitio."));
 }
+function viewScript(i){ // NUEVO: muestra el guion/letra aunque el mp3 no esté cargado todavía
+  const t=audioLibAll()[i];
+  if(!(t.free||isPremium())){ openPremium(); return; }
+  openModal(`<p class="eyebrow">${t.type} · ${t.band}</p><h2 class="h-serif h-lg">${t.ic} ${esc(t.n)}</h2><p class="mt" style="white-space:pre-wrap;line-height:1.7">${esc(t.script||"")}</p>`);
+}
+function pieceOfWeek(){ // NUEVO: elige una pieza fija por semana, respetando la edad del hijo activo si hay perfil
+  const list=audioLibAll();
+  if(!list.length) return null;
+  let pool=list;
+  if(S.profile){
+    const band=babyMonth()<24?"0 a 2 años":"2 a 5 años";
+    const filtered=list.filter(t=>t.band===band);
+    if(filtered.length) pool=filtered;
+  }
+  const picked=pool[weekIndex()%pool.length];
+  return {item:picked, idx:list.indexOf(picked)};
+}
 function viewAudioLibrary(){
-  const prem=isPremium();
-  let h=`<section class="card hero"><p class="eyebrow">Biblioteca sonora</p><h2 class="h-serif h-lg">Cuentos y canciones narradas</h2><p class="muted">Para escuchar juntos o sumar a la rutina de sueño, sin pantallas.</p></section>`;
-  h+=`<div class="stack mt">`+AUDIO_LIB.map((t,i)=>{
+  const prem=isPremium(), list=audioLibAll(), next=nextAudioPiece(), fw=pieceOfWeek();
+  let h=`<section class="card hero"><p class="eyebrow">Biblioteca sonora</p><h2 class="h-serif h-lg">Cuentos y canciones narradas</h2><p class="muted">Para escuchar juntos o sumar a la rutina de sueño, sin pantallas. Se suman piezas nuevas solas, sin que tengamos que tocar nada.</p></section>`;
+  if(fw){
+    const t=fw.item, i=fw.idx, open=t.free||prem, playing=TRK.idx===i && TRK.audio && !TRK.audio.paused;
+    h+=`<div class="card gilded mt"><p class="eyebrow">🎧 Pieza de la semana</p><h3 class="h-serif h-md" style="margin:4px 0 2px">${t.ic} ${esc(t.n)}</h3><p class="muted" style="font-size:.9rem">${t.type} · ${t.band}</p>
+      <div class="row wrap mt-s"><button class="btn ${open?"btn-primary":"btn-gold"}" onclick="${open?`playTrack(${i})`:"openPremium()"}">${open?(playing?"⏸ Pausar":"▶ Escuchar"):"🔒 Desbloquear"}</button>${open?`<button class="btn btn-ghost" onclick="viewScript(${i})">📄 Ver guion</button>`:""}</div></div>`;
+  }
+  h+=`<div class="stack mt">`+list.map((t,i)=>{
     const open=t.free||prem, playing=TRK.idx===i && TRK.audio && !TRK.audio.paused;
-    return `<button class="sound ${playing?"on":""} ${open?"":"locked"}" onclick="${open?`playTrack(${i})`:"openPremium()"}"><span class="sound-ic">${t.ic}</span><span class="grow" style="text-align:left"><strong>${esc(t.n)}</strong><span class="muted" style="display:block;font-size:.85rem">${open?(playing?"Sonando · tocá para pausar":t.type+" · "+t.band):"🔒 Premium"}</span></span><span style="font-size:20px">${playing?"⏸":open?"▶":"🔒"}</span></button>`;
+    return `<div class="sound ${playing?"on":""} ${open?"":"locked"}" style="cursor:default">
+      <button class="clickable" style="all:unset;display:flex;align-items:center;gap:12px;flex:1;cursor:pointer" onclick="${open?`playTrack(${i})`:"openPremium()"}">
+        <span class="sound-ic">${t.ic}</span><span class="grow" style="text-align:left"><strong>${esc(t.n)}</strong><span class="muted" style="display:block;font-size:.85rem">${open?(playing?"Sonando · tocá para pausar":t.type+" · "+t.band):"🔒 Premium"}</span></span>
+        <span style="font-size:20px">${playing?"⏸":open?"▶":"🔒"}</span>
+      </button>
+      ${open?`<button class="icon-btn" style="flex:0 0 auto" onclick="viewScript(${i})" aria-label="Ver guion">📄</button>`:""}
+    </div>`;
   }).join("")+`</div>`;
   if(!prem) h+=`<div class="card locked mt"><p style="font-weight:800">🔒 Toda la biblioteca sonora</p><p class="muted">Con Premium desbloqueás todos los cuentos y canciones narradas.</p><button class="btn btn-gold btn-sm mt" onclick="openPremium()">Desbloquear</button></div>`;
+  if(next) h+=`<p class="muted mt" style="font-size:.85rem">🗓️ Próxima pieza el ${parseKey(next.desde).toLocaleDateString("es-AR",{day:"numeric",month:"long"})}.</p>`;
+  h+=`<p class="muted mt" style="font-size:.85rem">☝️ Si un audio no suena, puede que el archivo mp3 todavía no esté cargado en el sitio; mientras tanto podés tocar 📄 para leer el guion.</p>`;
   return h;
 }
 function openChapter(i){ S.chapter=i; S.libTab="guides"; S.section="library"; LS.set("section","library"); render(); }
@@ -2045,6 +2096,7 @@ async function loadUpdates(){
   buildNav();
   if(S.profiles.length) $("startBtn").textContent="Continuar";
   loadUpdates();
+  loadAudioLib(); // NUEVO: trae el calendario de 3 años de cuentos y canciones desde audio_lib.json
   if(S.access && CONFIG.verifyEndpoint && Date.now()-S.access.checked > CONFIG.recheckHours*36e5) reverify(true);
   setInterval(tickCountdown,1000);
 })();
