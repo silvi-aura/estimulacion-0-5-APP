@@ -1,22 +1,15 @@
 {
-  "name": "Alimentación y estimulación temprana · Silvi-Aura",
-  "short_name": "Silvi-Aura",
-  "description": "Guía mes a mes de alimentación y estimulación temprana, de 0 a 5 años, con menús, juegos, rutinas de sueño y seguimiento por hijo.",
-  "id": "/",
-  "start_url": "./index.html",
+  "name": "Crecer de 0 a 5 años",
+  "short_name": "Crecer 0 a 5",
+  "description": "Alimentación y estimulación temprana para bebés y niños de 0 a 5 años.",
+  "lang": "es",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait-primary",
   "background_color": "#f7f2e8",
   "theme_color": "#f7f2e8",
-  "lang": "es-AR",
-  "dir": "ltr",
-  "categories": ["lifestyle", "kids", "education", "health"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }

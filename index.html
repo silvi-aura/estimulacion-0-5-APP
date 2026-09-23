@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f2e8">
-<title>Alimentación y estimulación temprana · Silvi-Aura</title>
+<title>Crecer de 0 a 5 años</title>
 
 <!-- ===== PWA: instalación en Android/Chrome y iPhone/Safari ===== -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=2">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
 <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png">
@@ -15,7 +15,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Silvi-Aura">
+<meta name="apple-mobile-web-app-title" content="Crecer 0 a 5">
+<meta name="application-name" content="Crecer 0 a 5">
 <!-- ===== fin bloque PWA ===== -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -282,7 +283,7 @@ textarea.input{min-height:120px;resize:vertical;line-height:1.5}
   <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
   <div class="w-inner">
     <div class="w-ring">🧸</div>
-    <p class="w-brand">Silvi-Aura</p>
+    <p class="w-brand">Crecer de 0 a 5</p>
     <h1 class="w-title">Alimentación y estimulación temprana</h1>
     <p class="w-quote">“Los primeros 1000 días construyen la base de toda una vida.”</p>
     <p class="w-sub">Mes a mes, de 0 a 5 años, con información de OMS, UNICEF, AAP y CDC.</p>
@@ -294,7 +295,7 @@ textarea.input{min-height:120px;resize:vertical;line-height:1.5}
 <!-- APP -->
 <div id="app" class="hidden">
   <aside class="sidebar">
-    <p class="sb-brand">Silvi-Aura</p>
+    <p class="sb-brand">Crecer de 0 a 5</p>
     <p class="sb-title">Alimentación y estimulación temprana</p>
     <button class="child-chip mb" onclick="openChildren()" aria-label="Elegir hijo" style="max-width:100%"></button>
     <nav class="sb-nav" id="sbNav"></nav>
@@ -314,7 +315,7 @@ textarea.input{min-height:120px;resize:vertical;line-height:1.5}
   <div class="main">
     <header class="topbar">
       <div class="tb-row">
-        <div><span class="tb-brand">Silvi-Aura</span><h1 id="tbTitle" class="h-serif tb-title">Inicio</h1></div>
+        <div><span class="tb-brand">Crecer de 0 a 5</span><h1 id="tbTitle" class="h-serif tb-title">Inicio</h1></div>
         <div class="tb-actions">
           <button class="icon-btn" id="tbPrem" onclick="openPremium()" aria-label="Premium">👑</button>
           <button class="icon-btn themeBtnIcon" onclick="toggleTheme()" aria-label="Cambiar tema">🌙</button>
@@ -1961,7 +1962,7 @@ function downloadSummaryPDF(ykey){
   section("Alimentos nuevos probados",data.foods.map(f=>f.food+" ("+parseKey(f.date).toLocaleDateString("es-AR",{day:"numeric",month:"short"})+")"));
   section("Notas del diario",data.notes.map(n=>n.text));
   doc.setFontSize(9); doc.setTextColor(150);
-  doc.text("Generado con la app Alimentación y estimulación temprana · Silvi-Aura",15,290);
+  doc.text("Generado con la app Crecer de 0 a 5 años",15,290);
   doc.save(`resumen-${name.replace(/\s+/g,"-").toLowerCase()}-${ykey}.pdf`);
   toast("PDF descargado ✓");
 }
@@ -2037,7 +2038,7 @@ function logoutAccess(){ S.access=null; LS.set("access",null); syncProfile(); cl
 
 function installSectionHTML(){
   if(isStandalone()){
-    return `<div class="card mt" style="box-shadow:none;background:var(--bg-2)"><p style="font-weight:800">📲 App instalada</p><p class="muted">Ya estás usando Silvi-Aura como aplicación. ✅</p></div>`;
+    return `<div class="card mt" style="box-shadow:none;background:var(--bg-2)"><p style="font-weight:800">📲 App instalada</p><p class="muted">Ya estás usando Crecer de 0 a 5 como aplicación. ✅</p></div>`;
   }
   if(deferredInstallPrompt){
     return `<div class="card mt" style="box-shadow:none;background:var(--bg-2)"><p style="font-weight:800">📲 Instalar la app</p><p class="muted">Sumala a tu pantalla de inicio para abrirla como una app, sin el navegador.</p><button class="btn btn-primary btn-sm mt-s" onclick="installApp()">Instalar app</button></div>`;
